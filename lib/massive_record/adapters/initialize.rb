@@ -9,10 +9,10 @@ module MassiveRecord
 end
 
 # Default adapter is set to thrift
-MassiveRecord.adapter = :thrift
+MassiveRecord.adapter = defined?(JRUBY_VERSION) ? :native : :thrift
 
 # Check the adapter is valid
-raise "The adapter can only be 'thrift'." unless [:thrift].include?(MassiveRecord.adapter)
+raise "The adapter can only be 'thrift'." unless [:native, :thrift].include?(MassiveRecord.adapter)
 
 # Load specific adapter
 require "massive_record/adapters/#{MassiveRecord.adapter}/adapter"
