@@ -39,7 +39,6 @@ describe "A table" do
       end
     
       it "should load a table" do
-        @connection.load_table(MR_CONFIG['table']).class.should eql(MassiveRecord::Wrapper::Table)
         @connection.tables.load(MR_CONFIG['table']).class.should eql(MassiveRecord::Wrapper::Table)
       end
       

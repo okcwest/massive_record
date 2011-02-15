@@ -24,6 +24,7 @@ describe "A connection" do
   end
    
   it "should not be able to open a new connection with a wrong configuration and Raise an error" do
+    @connection.host = "www.domain.com"
     @connection.port = 1234
     lambda{@connection.open}.should raise_error(MassiveRecord::Wrapper::Errors::ConnectionException)
   end

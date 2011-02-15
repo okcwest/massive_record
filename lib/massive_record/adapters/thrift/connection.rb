@@ -46,10 +46,6 @@ module MassiveRecord
           collection
         end
     
-        def load_table(table_name)
-          MassiveRecord::Wrapper::Table.new(self, table_name)
-        end
-    
         # Wrapp HBase API to be able to catch errors and try reconnect
         def method_missing(method, *args)
           begin
