@@ -69,6 +69,12 @@ Tables also have:
 Here is an example of usage, both for Table and Column:
 
     class Person < MassiveRecord::ORM::Table
+      references_one :boss, :class_name => "Person", :store_in => :info
+      references_one :attachment, :polymorphic => true
+      references_many :friends, :store_in => :info
+      references_many :cars, :records_starts_from => :cars_start_id
+
+
       column_family :info do
         field :name
         field :email
@@ -80,10 +86,15 @@ Here is an example of usage, both for Table and Column:
         timestamps # ..or field :created_at, :time
       end
 
-      references_one :boss, :class_name => "Person", :store_in => :info
 
       validates_presence_of :name, :email
       validates_format_of :email, :with => /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i
+
+      # Returns the id the scanner should start from in the Car table
+      # to fetch cars related to this person
+      def cars_start_id
+        id+'-'
+      end
     end
 
     

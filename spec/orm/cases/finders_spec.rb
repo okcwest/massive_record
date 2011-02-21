@@ -172,6 +172,14 @@ describe "finders" do
       15.times { |i| Person.create! :id => "id-#{i}", :name => "Going to die :-(", :age => i + 20 }
       Person.all.length.should > 10
     end
+
+    it "should raise error if not all requested records was found" do
+      lambda { Person.find(["ID1", "not exists"]) }.should raise_error MassiveRecord::ORM::RecordNotFound
+    end
+
+    it "should return what it finds if asked to" do
+      lambda { Person.find(["ID1", "not exists"], :skip_expected_result_check => true) }.should_not raise_error MassiveRecord::ORM::RecordNotFound
+    end
   end
   
   describe "#find_in_batches" do
@@ -187,6 +195,20 @@ describe "finders" do
         end
       end        
       group_number.should == @table_size / 3
+    end
+
+    it "should not do a thing if table does not exist" do
+      Person.table.should_receive(:exists?).and_return false
+
+      counter = 0
+
+      Person.find_in_batches(:batch_size => 3) do |rows|
+        rows.each do |row|
+          counter += 1
+        end
+      end
+
+      counter.should == 0
     end
     
     it "should iterate through a collection of rows using a batch process" do

@@ -3,34 +3,34 @@ module MassiveRecord
     module Relations
       class Proxy
         class ReferencesOnePolymorphic < Proxy
-          def target=(target)
-            set_foreign_key_and_type_in_owner(target.id, target.class.to_s.underscore) if target
-            super(target)
+          def proxy_target=(proxy_target)
+            set_foreign_key_and_type_in_proxy_owner(proxy_target.id, proxy_target.class.to_s.underscore) if proxy_target
+            super(proxy_target)
           end
 
-          def target_class
-            owner.send(polymorphic_type_column).classify.constantize
+          def proxy_target_class
+            proxy_owner.send(metadata.polymorphic_type_column).classify.constantize
           end
 
-          def replace(target)
+          def replace(proxy_target)
             super
-            set_foreign_key_and_type_in_owner(nil, nil) if target.nil?
+            set_foreign_key_and_type_in_proxy_owner(nil, nil) if proxy_target.nil?
           end
 
 
           private
 
-          def find_target
-            target_class.find(owner.send(foreign_key))
+          def find_proxy_target
+            proxy_target_class.find(proxy_owner.send(metadata.foreign_key))
           end
 
-          def can_find_target?
-            use_find_with? || (owner.send(foreign_key).present? && owner.send(polymorphic_type_column).present?)
+          def can_find_proxy_target?
+            super || (proxy_owner.send(metadata.foreign_key).present? && proxy_owner.send(metadata.polymorphic_type_column).present?)
           end
 
-          def set_foreign_key_and_type_in_owner(id, type)
-            owner.send(foreign_key_setter, id) if owner.respond_to?(foreign_key_setter)
-            owner.send(polymorphic_type_column_setter, type) if owner.respond_to?(polymorphic_type_column_setter)
+          def set_foreign_key_and_type_in_proxy_owner(id, type)
+            proxy_owner.send(metadata.foreign_key_setter, id) if proxy_owner.respond_to?(metadata.foreign_key_setter)
+            proxy_owner.send(metadata.polymorphic_type_column_setter, type) if proxy_owner.respond_to?(metadata.polymorphic_type_column_setter)
           end
 
 
