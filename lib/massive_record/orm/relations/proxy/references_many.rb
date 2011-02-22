@@ -9,7 +9,6 @@ module MassiveRecord
           # proxy_targets.
           #
           # TODO  - Implement methods like:
-          #         * limit
           #         * find_in_batches
           #         * find_each
           #         * etc :-)
@@ -121,13 +120,8 @@ module MassiveRecord
           end
 
           def first
-            if loaded?
-              proxy_target.first
-            else
-              find_first
-            end
+            limit(1).first
           end
-
 
           def find(id)
             if loaded?
@@ -143,6 +137,18 @@ module MassiveRecord
             raise RecordNotFound.new("Could not find #{proxy_target_class.model_name} with id=#{id}") if record.nil?
 
             record
+          end
+
+          def limit(limit)
+            if loaded?
+              proxy_target.slice(0, limit)
+            elsif find_with_proc?
+              find_proxy_target_with_proc(:limit => limit)
+            else
+              ids = proxy_owner.send(metadata.foreign_key).slice(0, limit)
+              ids = ids.first if ids.length == 1
+              [find_proxy_target(ids)].flatten
+            end
           end
 
 
@@ -164,18 +170,9 @@ module MassiveRecord
 
 
 
-          def find_proxy_target
-            proxy_target_class.find(proxy_owner.send(metadata.foreign_key), :skip_expected_result_check => true)
-          end
-
-          def find_first
-            if can_find_proxy_target?
-              if find_with_proc?
-                find_proxy_target_with_proc(:limit => 1).first
-              elsif first_id = proxy_owner.send(metadata.foreign_key).first
-                proxy_target_class.find(first_id)
-              end
-            end
+          def find_proxy_target(ids = nil)
+            ids = proxy_owner.send(metadata.foreign_key) if ids.nil?
+            proxy_target_class.find(ids, :skip_expected_result_check => true)
           end
 
           def find_proxy_target_with_proc(options = {})
